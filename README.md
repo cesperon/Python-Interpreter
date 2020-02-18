@@ -1,2 +1,2 @@
-# Python-Interpreter
-Python Interpreter written in c++
+# interpreter
+A Python subset interpreter written in C++

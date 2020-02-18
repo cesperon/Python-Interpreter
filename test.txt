@@ -1,0 +1,11 @@
+a = ["hi","bye", "lie", "cry", "tie"]
+
+print len(a)
+a[0] = "a"
+
+
+print a[0]
+
+
+
+print len(a)

@@ -1,10 +1,13 @@
-#include <iostream>
-#include<vector>
+//Author:Christian Esperon
 
+#include <iostream>
+#include <vector>
+#include <memory>
 
 #include "Token.hpp"
 #include "Tokenizer.hpp"
 #include "Parser.hpp"
+#include "TypeDescriptor.hpp"
 
 int main(int argc, char *argv[]) {
 
@@ -17,19 +20,23 @@ int main(int argc, char *argv[]) {
 
     inputStream.open(argv[1], std::ios::in);
     if( ! inputStream.is_open()) {
-        std::cout << "Unable top open " << argv[1] << ". Terminating...";
-        perror("Error when attempting to open the input file.");
+        std::cout << "Unable to open " << argv[1] << ". Terminating...\n";
         exit(2);
-    }
+	}
 
     Tokenizer tokenizer(inputStream);
-    Parser parser(tokenizer);
-    Statements *statements = parser.statements();
-    SymTab symTab;
 
-    statements->print();
+	// Uncomment the lines below and comment out everything
+	// after the comment block and before "return 0;" for debugging
+    /*Token tok = tokenizer.getToken();
+	while( !tok.eof() )
+		tok = tokenizer.getToken();
+	tokenizer.printProcessedTokens();*/
+		
+	Parser parser(tokenizer);
+	auto statements = parser.file_input();
+    SymTab symTab;
     statements->evaluate(symTab);
 
-    
     return 0;
 }

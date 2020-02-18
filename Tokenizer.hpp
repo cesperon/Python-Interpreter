@@ -1,6 +1,4 @@
-//
-// Created by Christian Esperon
-//
+//Author:Christian Esperon
 
 #ifndef EXPRINTER_TOKENIZER_HPP
 #define EXPRINTER_TOKENIZER_HPP
@@ -10,34 +8,28 @@
 #include <vector>
 #include <stack>
 #include "Token.hpp"
-#include "SymTab.hpp"
-class Tokenizer {
 
+class Tokenizer {
 public:
-    Tokenizer(std::ifstream &inStream);
+    explicit Tokenizer(std::ifstream &inStream);
     Token getToken();
     void ungetToken();
-    void printProcessedTokens();
-    int getIndentationLvl() {return _indent.size();}
-
+	void printProcessedTokens();
+	bool getBol() const { return bol; }
 private:
     Token lastToken;
+	int col;
     bool ungottenToken;
+	bool bol;
+	std::stack<int> stack;
     std::ifstream &inStream;
     std::vector<Token> _tokens;
-    bool parssingANewLine = true;
-    std::stack<int> _indent; 
-    int spaceCounter = 0;
-
 private:
-    void readComment();
-    std::string readString();
+	bool isKeyword(std::string str);
     std::string readName();
-    int readInteger();
-    std::string readEquiv();
-    std::string readUnequiv();
-    std::string readGreater();
-    std::string readLess();
+	std::string readOp();
+	std::string readString();
+    void readNumber(Token &tok);
 };
 
 #endif //EXPRINTER_TOKENIZER_HPP

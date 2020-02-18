@@ -1,112 +1,52 @@
-//
-// Created by Christian Esperon
-//
+//Author:Christian Esperon
 
 #include <iostream>
+#include <memory>
 #include "SymTab.hpp"
+#include "TypeDescriptor.hpp"
+#include "Token.hpp"
 
-void SymTab::printValue(TypeDescriptor * desc) {
-  // If desc is of datatype NumberDescriptor, this function
-  // print the value that is store in it. Otherwise,
-  // it just returns.
+// Uncomment the line below to enable debugging
+// #define DEBUG 1
 
-  
-  // Use dynamic_cast to down-cast, from TypeDescriptor to
-  // NumberDescriptr.
-  NumberDescriptor * nDesc = dynamic_cast< NumberDescriptor * >(desc);
-  // dynamic_cast will return a nullptr if
-  // desc is not of datatype NumberDescriptr.
-  if( nDesc == nullptr )
-    return;
-
-  // desc must have been of type NumberDescriptr
-  if( nDesc->type() == TypeDescriptor::INTEGER )
-    std::cout<< nDesc->value.intValue<< std::endl;
-  else if( nDesc->type() == TypeDescriptor::DOUBLE )
-    std::cout<< nDesc->value.doubleValue << std::endl;
-  else if( nDesc->type() == TypeDescriptor::BOOL )
-    std::cout << nDesc->value.boolValue << std::endl;
-  else
-    std::cout<< "Misconfigured union type. " << std :: endl;
-  
-}
-
-
-void SymTab::printValue(std::string vName) {
-
-  if( ! isDefined(vName)) {
-        std::cout << "SymTab::getValueFor: " << vName << " has not been defined.\n";
-        exit(1);
-    }
-
-    if(symTab.find(vName)->second->type() == TypeDescriptor::INTEGER) {
-
-       NumberDescriptor * nDesc = dynamic_cast<NumberDescriptor *>(symTab.find(vName)->second);
-       std::cout << nDesc->value.intValue;
-      
-
-    }
-
-    else {
-
-        StringDescriptor * nDesc = dynamic_cast<StringDescriptor *>(symTab.find(vName)->second);
-        std::cout<< nDesc->strValue;
-     
-    }
-}
-
-void SymTab::setValueFor(std::string vName, int value) {
+void SymTab::setValueFor(std::string const &vName,
+						 std::shared_ptr<TypeDescriptor> rDesc) {
     // Define a variable by setting its initial value.
-    std::cout << vName << " <- " << value << std::endl;
-    //symTab[vName] = value;
-    NumberDescriptor * desc = new NumberDescriptor(TypeDescriptor::INTEGER);
-    desc->value.intValue = value;
-    desc->value.doubleValue = double(value);
-    desc->value.boolValue = short(value);
-    
-    symTab[vName] = desc;
+	symTab[vName] = std::move(rDesc);
 }
 
-void SymTab::setValueFor(std::string vName, std::string str){
-
-  std::cout << vName << " <- " << str << std::endl;
-
-  StringDescriptor * desc = new StringDescriptor(TypeDescriptor::STRING);
-  desc->strValue = str;
-
-  symTab[vName] = desc;
+void SymTab::increment(std::string const &vName, int increment) {
+    // Define a variable by setting its initial value.
+	auto rDesc = dynamic_cast<NumberDescriptor *>
+		( getValueFor(vName).get() );
+	if( rDesc == nullptr ) {
+		std::cout << "SymTab::increment error casting TypeDescriptor\n";
+		exit(1);
+	}
+	if( rDesc->type() != TypeDescriptor::INTEGER) {
+		std::cout << "SymTab::increment only supports integers\n";
+		exit(1);
+	} else
+	    rDesc->value.intValue += increment;
 }
 
-bool SymTab::isDefined(std::string vName) {
+bool SymTab::isDefined(std::string const &vName) {
     return symTab.find(vName) != symTab.end();
 }
 
-
-TypeDescriptor * SymTab::getValueFor(std::string vName) {
-
-      if( ! isDefined(vName)) {
-        std::cout << "SymTab::getValueFor: " << vName << " has not been defined.\n";
+std::shared_ptr<TypeDescriptor> SymTab::getValueFor(std::string const &vName) {
+    if( !isDefined(vName) ) {
+        std::cout << "SymTab::getValueFor: " << vName;
+		std::cout << " has not been defined.\n";
         exit(1);
-      }
-      
-      /*
-      if(symTab.find(vName)->second->type() == TypeDescriptor::INTEGER) {
-
-        NumberDescriptor * nDesc = dynamic_cast<NumberDescriptor *>(symTab.find(vName)->second);
-        std::cout << "SymTab::getValueFor: " << vName << " contains " << nDesc->value.intValue << std::endl;
-   
-      }
-
-     else if(symTab.find(vName)->second->type() == TypeDescriptor::STRING){
-
-         StringDescriptor * nDesc = dynamic_cast<StringDescriptor *>(symTab.find(vName)->second);
-         std::cout << "SymTab::getValueFor: " << vName << " contains " << nDesc->strValue << std::endl;
-      
-       }
-      */
- 
-      return symTab.find(vName)->second;
-      
+    }
+#ifdef DEBUG
+    std::cout << "SymTab::getValueFor: " << vName << " contains ";
+	printValue( symTab.find(vName)->second.get() );
+	std::cout << std::endl;
+#endif
+	
+    return symTab.find(vName)->second;
 }
-    
-   
+
+
